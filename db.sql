@@ -1,0 +1,6 @@
+CREATE TABLE users (
+id  UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+name  VARCHAR(23) NOT NULL CHECK (LENGTH(name) >= 3),
+email VARCHAR(255) NOT NULL UNIQUE,
+password VARCHAR(255) NOT NULL CHECK (LENGTH(password) >=8)
+);
