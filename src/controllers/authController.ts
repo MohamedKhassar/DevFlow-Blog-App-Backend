@@ -33,7 +33,7 @@ const register = async (req: Request, res: Response) => {
         }
 
     } catch (error) {
-
+        return res.status(500).json({ message: error })
     }
 }
 
@@ -41,7 +41,13 @@ const login = (req: Request, res: Response) => {
     res.json("hi")
 }
 
+const deleteUser = async (req: Request, res: Response) => {
+    await pool.query("delete from users")
+    res.json("delete user")
+}
+
 export {
     register,
     login,
+    deleteUser,
 }
