@@ -14,21 +14,19 @@ const createToken = (id: string) => {
 
 const register = async (req: Request, res: Response) => {
     const { name, email, password } = req.body;
+    const date = new Date().toUTCString()
+    console.log(date)
     try {
         const userExist = await (await pool.query("select * from users where email=$1", [email])).rows[0]
         if (userExist) {
             return res.status(400).json({ message: "Email already exists" })
         } else {
             const hashedPassword = await bcrypt.hash(password, 10)
-            const user = (await pool.query("INSERT INTO users(name,email,password) VALUES($1,$2,$3)  RETURNING id,name,email", [name, email, hashedPassword])).rows[0]
-            const token = createToken(user)
-            res.cookie("access_token", token, {
-                httpOnly: true,
-                maxAge: 60 * 60 * 24 * 1000 * 2,
-            }).json({
+            const user = (await pool.query("INSERT INTO users(name,email,password,created_at) VALUES($1,$2,$3,$4)  RETURNING id,name,email,created_at", [name, email, hashedPassword, date])).rows[0]
+            const token = createToken(user.id)
+            res.json({
                 message: "User registered successfully",
-                user,
-                token
+                token,
             })
         }
 
@@ -44,13 +42,13 @@ const login = async (req: Request, res: Response) => {
         if (userExist) {
             const matchedPassword = await bcrypt.compare(password, userExist.password)
             if (matchedPassword) {
-                const token = createToken(userExist)
+                const token = createToken(userExist.id)
                 return res.cookie("access_token", token, {
                     httpOnly: true,
                     maxAge: 60 * 60 * 24 * 1000 * 2,
                 }).json({
                     message: "User logged in successfully",
-                    user: { name: userExist.name, email: userExist.email, token },
+                    token
                 })
             }
         }

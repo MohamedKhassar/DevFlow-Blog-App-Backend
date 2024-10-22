@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import "dotenv/config"
 import { authRoutes } from './routes/authRoutes';
 import cors from "cors"
+import { userAuth } from '@routes/userRoutes';
 const app = express();
 const PORT = Number(process.env.PORT) || 8080;
 const host = '192.168.1.8'
@@ -18,6 +19,8 @@ app.get("/", (req: Request, res: Response) => {
 })
 // Auth Routes
 app.use("/api", authRoutes)
+app.use("/api", userAuth)
+
 
 // Start the server
 app.listen(PORT, host, () => {
