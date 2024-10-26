@@ -6,9 +6,7 @@ import "dotenv/config"
 const SECRET_KEY = process.env.SECRET_KEY!
 
 const createToken = (id: string) => {
-    const token = jwt.sign({ id }, SECRET_KEY, {
-        expiresIn: "1h"
-    })
+    const token = jwt.sign({ id }, SECRET_KEY)
     return token
 }
 
@@ -22,7 +20,7 @@ const register = async (req: Request, res: Response) => {
             return res.status(400).json({ message: "Email already exists" })
         } else {
             const hashedPassword = await bcrypt.hash(password, 10)
-            const user = (await pool.query("INSERT INTO users(name,email,password,created_at) VALUES($1,$2,$3,$4)  RETURNING id,name,email,created_at", [name, email, hashedPassword, date])).rows[0]
+            const user = (await pool.query("INSERT INTO users(name,email,password,created_at) VALUES($1,$2,$3,$4)  RETURNING id,name,email,created_at,bio", [name, email, hashedPassword, date])).rows[0]
             const token = createToken(user.id)
             res.json({
                 message: "User registered successfully",
@@ -43,10 +41,7 @@ const login = async (req: Request, res: Response) => {
             const matchedPassword = await bcrypt.compare(password, userExist.password)
             if (matchedPassword) {
                 const token = createToken(userExist.id)
-                return res.cookie("access_token", token, {
-                    httpOnly: true,
-                    maxAge: 60 * 60 * 24 * 1000 * 2,
-                }).json({
+                return res.json({
                     message: "User logged in successfully",
                     token
                 })
